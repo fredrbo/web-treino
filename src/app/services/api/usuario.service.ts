@@ -2,7 +2,7 @@ import { GenericListDTO } from './../../components/api-model';
 import { Injectable } from '@angular/core';
 import { BaseService } from './base.service';
 import { Observable } from 'rxjs';
-import { UsuariorDTO } from '../../components/usuario-model';
+import { UsuariorDTO, CreateUsuarioDTO } from '../../components/usuario-model';
 
 
 @Injectable({
@@ -19,8 +19,9 @@ export class UsuarioService extends BaseService {
     return this.get<GenericListDTO<UsuariorDTO[]>>();
   }
 
-  createUsuario(usuario: UsuariorDTO): Observable<UsuariorDTO> {
-    return this.post<UsuariorDTO>(usuario);
+  createUsuario(usuario: CreateUsuarioDTO): Observable<UsuariorDTO> {
+    console.log('📝 Criando usuário:', usuario);
+    return this.post<UsuariorDTO, CreateUsuarioDTO>(usuario);
   }
 
   updateUsuario(id: number, usuario: Partial<UsuariorDTO>): Observable<UsuariorDTO> {

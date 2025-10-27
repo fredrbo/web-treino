@@ -1,11 +1,180 @@
 <div class="page-container">
-  <h1>Usuários</h1>
-  <p>Página para gerenciamento de usuários do sistema.</p>
-  
-  <mat-card class="info-card">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-info">
+      <h1>👥 Usuários</h1>
+      <p>Gerenciamento de usuários do sistema</p>
+    </div>
+    
+    <div class="header-actions">
+      <button mat-fab color="primary" (click)="createUsuario()" [disabled]="loading" class="fab-button">
+        <mat-icon>add</mat-icon>
+      </button>
+      
+      <button mat-icon-button (click)="loadUsuarios()" [disabled]="loading" matTooltip="Recarregar">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Card -->
+  <mat-card class="stats-card" *ngIf="!loading && !error">
     <mat-card-content>
-      <h2>Em desenvolvimento</h2>
-      <p>Esta funcionalidade será implementada em breve.</p>
+      <div class="stats-content">
+        <div class="stat-item">
+          <mat-icon>people</mat-icon>
+          <div class="stat-info">
+            <span class="stat-number">{{ usuarios.length }}</span>
+            <span class="stat-label">Usuários</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <mat-icon>person_add</mat-icon>
+          <div class="stat-info">
+            <span class="stat-number">{{ usuarios.length > 0 ? 'Ativos' : 'Vazio' }}</span>
+            <span class="stat-label">Status</span>
+          </div>
+        </div>
+      </div>
     </mat-card-content>
   </mat-card>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Carregando usuários...</p>
+  </div>
+
+  <!-- Error -->
+  <mat-card class="error-card" *ngIf="error && !loading">
+    <mat-card-content>
+      <div class="error-content">
+        <mat-icon color="warn">error_outline</mat-icon>
+        <div class="error-info">
+          <h3>Ops! Algo deu errado</h3>
+          <p>{{ error }}</p>
+          <button mat-raised-button color="primary" (click)="loadUsuarios()">
+            <mat-icon>refresh</mat-icon>
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Formulário de Criação -->
+  <mat-card class="create-form-card" *ngIf="showCreateForm">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>person_add</mat-icon>
+        Novo Usuário
+      </mat-card-title>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <form #createForm="ngForm" (ngSubmit)="submitCreateUser()">
+        <div class="form-fields">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nome</mat-label>
+            <input matInput 
+                   [(ngModel)]="newUser.nome" 
+                   name="nome"
+                   required
+                   placeholder="Digite o nome completo">
+            <mat-icon matSuffix>person</mat-icon>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput 
+                   [(ngModel)]="newUser.email" 
+                   name="email"
+                   type="email"
+                   required
+                   placeholder="Digite o email">
+            <mat-icon matSuffix>email</mat-icon>
+          </mat-form-field>
+        </div>
+      </form>
+    </mat-card-content>
+    
+    <mat-card-actions>
+      <button mat-button (click)="cancelCreate()" type="button">
+        <mat-icon>close</mat-icon>
+        Cancelar
+      </button>
+      <button mat-raised-button 
+              color="primary" 
+              (click)="submitCreateUser()"
+              [disabled]="!newUser.nome.trim() || !newUser.email.trim()">
+        <mat-icon>save</mat-icon>
+        Criar Usuário
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <!-- Lista de Usuários em Cards -->
+  <div class="users-grid" *ngIf="!loading && !error && usuarios.length > 0">
+    <mat-card class="user-card" *ngFor="let usuario of usuarios; trackBy: trackByUserId">
+      <mat-card-header>
+        <div mat-card-avatar class="user-avatar">
+          <mat-icon>person</mat-icon>
+        </div>
+        <mat-card-title>{{ usuario.nome }}</mat-card-title>
+        <mat-card-subtitle>
+          <div class="user-email">
+            <mat-icon>email</mat-icon>
+            {{ usuario.email }}
+          </div>
+        </mat-card-subtitle>
+        
+        <!-- Menu de ações -->
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" class="card-menu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item (click)="editUsuario(usuario)">
+            <mat-icon>edit</mat-icon>
+            <span>Editar</span>
+          </button>
+          <button mat-menu-item (click)="deleteUsuario(usuario)" class="delete-action">
+            <mat-icon>delete</mat-icon>
+            <span>Excluir</span>
+          </button>
+        </mat-menu>
+      </mat-card-header>
+      
+      <mat-card-actions>
+        <button mat-button color="primary" (click)="editUsuario(usuario)">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </button>
+        <button mat-button color="warn" (click)="deleteUsuario(usuario)">
+          <mat-icon>delete</mat-icon>
+          Excluir
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Empty State -->
+  <mat-card class="empty-state-card" *ngIf="!loading && !error && usuarios.length === 0">
+    <mat-card-content>
+      <div class="empty-state">
+        <mat-icon>person_off</mat-icon>
+        <h3>Nenhum usuário encontrado</h3>
+        <p>Comece criando seu primeiro usuário para gerenciar o sistema.</p>
+        <button mat-raised-button color="primary" (click)="createUsuario()" class="create-first-btn">
+          <mat-icon>person_add</mat-icon>
+          Criar Primeiro Usuário
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- FAB para adicionar (móvel) -->
+  <button mat-fab color="primary" (click)="createUsuario()" [disabled]="loading" class="mobile-fab">
+    <mat-icon>add</mat-icon>
+  </button>
 </div>
