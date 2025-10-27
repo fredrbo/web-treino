@@ -1,132 +1,123 @@
-import { Injectable } from '@angular/core';
+import { inject, Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
+import { ConfigService } from '../config.service';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class BaseService {
-  protected baseUrl = 'http://localhost:3000/api'; // Configure sua URL base aqui
 
-  constructor(protected http: HttpClient) {}
+    private http = inject(HttpClient);
+    private configService = inject(ConfigService);
+    protected table: string = '';
 
-  /**
-   * Método GET genérico
-   */
-  protected get<T>(endpoint: string, params?: HttpParams): Observable<T> {
-    const url = `${this.baseUrl}/${endpoint}`;
-    const options = {
-      headers: this.getHeaders(),
-      params: params
-    };
+    constructor() { }
 
-    return this.http.get<T>(url, options)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  /**
-   * Método POST genérico
-   */
-  protected post<T>(endpoint: string, data: any): Observable<T> {
-    const url = `${this.baseUrl}/${endpoint}`;
-    const options = {
-      headers: this.getHeaders()
-    };
-
-    return this.http.post<T>(url, data, options)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  /**
-   * Método PUT genérico
-   */
-  protected put<T>(endpoint: string, data: any): Observable<T> {
-    const url = `${this.baseUrl}/${endpoint}`;
-    const options = {
-      headers: this.getHeaders()
-    };
-
-    return this.http.put<T>(url, data, options)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  /**
-   * Método DELETE genérico
-   */
-  protected delete<T>(endpoint: string): Observable<T> {
-    const url = `${this.baseUrl}/${endpoint}`;
-    const options = {
-      headers: this.getHeaders()
-    };
-
-    return this.http.delete<T>(url, options)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  /**
-   * Método PATCH genérico
-   */
-  protected patch<T>(endpoint: string, data: any): Observable<T> {
-    const url = `${this.baseUrl}/${endpoint}`;
-    const options = {
-      headers: this.getHeaders()
-    };
-
-    return this.http.patch<T>(url, data, options)
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  /**
-   * Configura os headers padrão
-   */
-  private getHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-      // Adicione outros headers conforme necessário (ex: Authorization)
-    });
-  }
-
-  /**
-   * Manipula erros das requisições HTTP
-   */
-  private handleError(error: any): Observable<never> {
-    let errorMessage = '';
-
-    if (error.error instanceof ErrorEvent) {
-      // Erro do lado do cliente
-      errorMessage = `Erro: ${error.error.message}`;
-    } else {
-      // Erro do lado do servidor
-      errorMessage = `Código de erro: ${error.status}\nMensagem: ${error.message}`;
+    protected setTable(table: string): void {
+        this.table = table;
     }
 
-    console.error(errorMessage);
-    return throwError(() => new Error(errorMessage));
-  }
+    protected get baseUrl(): string {
+        return this.configService.apiUrl;
+    }
 
-  /**
-   * Método para definir a URL base dinamicamente
-   */
-  public setBaseUrl(url: string): void {
-    this.baseUrl = url;
-  }
 
-  /**
-   * Método para obter a URL base atual
-   */
-  public getBaseUrl(): string {
-    return this.baseUrl;
-  }
+    protected get<T>(params?: HttpParams): Observable<T> {
+        const url = `${this.baseUrl}?tabela=${this.table}`;
+        console.log('🌐 GET Request URL:', url);
+            
+        // Para Google Apps Script, é melhor não enviar headers customizados
+        const options = {
+            params: params
+        };
+        
+        return this.http.get<T>(url, options)
+            .pipe(
+                tap((response) => {
+                    console.log('✅ Resposta recebida:', response);
+                    console.log('Tipo da resposta:', typeof response);
+                }),
+                catchError((error) => {
+                    console.error('❌ Erro na requisição:', error);
+                    console.error('URL que falhou:', url);
+                    console.error('Status:', error.status);
+                    console.error('Response:', error.error);
+                    return this.handleError(error);
+                })
+            );
+    }
+
+    protected post<T>(data: any): Observable<T> {
+        const url = `${this.baseUrl}/${this.table}`;
+        const options = {
+            headers: this.getHeaders()
+        };
+
+        return this.http.post<T>(url, data, options)
+            .pipe(
+                catchError(this.handleError)
+            );
+    }
+
+    protected put<T>(id: string | number, data: any): Observable<T> {
+        const url = `${this.baseUrl}/${this.table}/${id}`;
+        const options = {
+            headers: this.getHeaders()
+        };
+
+        return this.http.put<T>(url, data, options)
+            .pipe(
+                catchError(this.handleError)
+            );
+    }
+
+    protected delete<T>(id: string | number): Observable<T> {
+        const url = `${this.baseUrl}/${this.table}/${id}`;
+        const options = {
+            headers: this.getHeaders()
+        };
+
+        return this.http.delete<T>(url, options)
+            .pipe(
+                catchError(this.handleError)
+            );
+    }
+
+    protected patch<T>(id: string | number, data: any): Observable<T> {
+        const url = `${this.baseUrl}/${this.table}/${id}`;
+        const options = {
+            headers: this.getHeaders()
+        };
+
+        return this.http.patch<T>(url, data, options)
+            .pipe(
+                catchError(this.handleError)
+            );
+    }
+
+    private getHeaders(): HttpHeaders {
+        return new HttpHeaders({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            // Removendo CORS headers que podem causar problema com Google Apps Script
+        });
+    }
+
+    private handleError(error: any): Observable<never> {
+        let errorMessage = '';
+
+        if (error.error instanceof ErrorEvent) {
+            // Erro do lado do cliente
+            errorMessage = `Erro: ${error.error.message}`;
+        } else {
+            // Erro do lado do servidor
+            errorMessage = `Código de erro: ${error.status}\nMensagem: ${error.message}`;
+        }
+
+        console.error(errorMessage);
+        return throwError(() => new Error(errorMessage));
+    }
+
 }

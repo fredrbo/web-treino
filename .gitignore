@@ -7,6 +7,15 @@
 /.angular/
 .angular/
 
+# Environment files
+.env
+.env.local
+.env.*.local
+.docs
+# Environment TypeScript files (generated from .env)
+/src/environments/environment.ts
+/src/environments/environment.prod.ts
+
 # Node modules and dependency files
 /node_modules/
 /package-lock.json
