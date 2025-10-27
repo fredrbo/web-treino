@@ -37,3 +37,110 @@ body {
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// Global responsive styles
+* {
+  box-sizing: border-box;
+}
+
+// Common page container styles
+.page-container {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (min-width: 768px) {
+    padding: 24px;
+  }
+
+  // Mobile: add extra padding at bottom to account for bottom nav
+  @media (max-width: 767px) {
+    padding-bottom: 24px; // Extra space above bottom nav
+  }
+
+  h1 {
+    margin: 0 0 8px 0;
+    font-size: 1.75rem;
+    font-weight: 500;
+    color: var(--mat-sys-on-surface);
+
+    @media (min-width: 768px) {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+  }
+
+  > p {
+    margin: 0 0 24px 0;
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 1rem;
+    line-height: 1.5;
+
+    @media (min-width: 768px) {
+      font-size: 1.125rem;
+      margin-bottom: 32px;
+    }
+  }
+}
+
+.info-card {
+  background: var(--mat-sys-surface-container);
+  border-radius: 12px;
+
+  mat-card-content {
+    padding: 24px !important;
+
+    @media (min-width: 768px) {
+      padding: 32px !important;
+    }
+
+    h2 {
+      margin: 0 0 12px 0;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--mat-sys-on-surface);
+
+      @media (min-width: 768px) {
+        font-size: 1.5rem;
+        margin-bottom: 16px;
+      }
+    }
+
+    p {
+      margin: 0;
+      color: var(--mat-sys-on-surface-variant);
+      font-size: 1rem;
+      line-height: 1.5;
+
+      @media (min-width: 768px) {
+        font-size: 1.125rem;
+      }
+    }
+  }
+}
+
+// Mobile-first responsive utilities
+.mobile-only {
+  @media (min-width: 768px) {
+    display: none !important;
+  }
+}
+
+.desktop-only {
+  @media (max-width: 767px) {
+    display: none !important;
+  }
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+}
+
+// Improve touch targets for mobile
+@media (max-width: 767px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
