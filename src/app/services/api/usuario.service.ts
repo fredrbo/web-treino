@@ -20,12 +20,11 @@ export class UsuarioService extends BaseService {
   }
 
   createUsuario(usuario: CreateUsuarioDTO): Observable<UsuariorDTO> {
-    console.log('📝 Criando usuário:', usuario);
     return this.post<UsuariorDTO, CreateUsuarioDTO>(usuario);
   }
 
-  updateUsuario(id: number, usuario: Partial<UsuariorDTO>): Observable<UsuariorDTO> {
-    return this.put<UsuariorDTO>(id, usuario);
+  updateUsuario(usuario: Partial<UsuariorDTO>): Observable<UsuariorDTO> {
+    return this.put<UsuariorDTO>(usuario);
   }
 
   deleteUsuario(id: number): Observable<void> {

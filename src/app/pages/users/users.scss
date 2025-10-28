@@ -144,59 +144,6 @@
   }
 }
 
-// Create Form
-.create-form-card {
-  margin-bottom: 24px;
-  border: 2px solid #1976d2;
-  
-  .mat-mdc-card-header {
-    background-color: #f3f9ff;
-    
-    .mat-mdc-card-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #1976d2;
-      font-weight: 500;
-    }
-  }
-  
-  .form-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px 0;
-    
-    .full-width {
-      width: 100%;
-    }
-    
-    mat-form-field {
-      .mat-mdc-form-field-icon-suffix {
-        color: #666;
-      }
-    }
-  }
-  
-  .mat-mdc-card-actions {
-    justify-content: flex-end;
-    gap: 12px;
-    padding: 16px;
-    background-color: #fafafa;
-    
-    button {
-      min-width: 120px;
-      
-      mat-icon {
-        margin-right: 8px;
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-      }
-    }
-  }
-}
-
 // Users Grid (Cards)
 .users-grid {
   display: grid;
@@ -376,23 +323,6 @@
   
   .mobile-fab {
     display: none;
-  }
-  
-  .create-form-card {
-    .form-fields {
-      flex-direction: row;
-      gap: 24px;
-      
-      .full-width {
-        flex: 1;
-      }
-    }
-    
-    .mat-mdc-card-actions {
-      button {
-        min-width: 140px;
-      }
-    }
   }
 }
 

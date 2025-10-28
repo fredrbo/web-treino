@@ -23,16 +23,12 @@ export class TreinoService extends BaseService {
     return this.post<TreinoDTO>(treino);
   }
 
-  updateTreino(id: number, treino: Partial<TreinoDTO>): Observable<TreinoDTO> {
-    return this.put<TreinoDTO>(id, treino);
+  updateTreino(treino: Partial<TreinoDTO>): Observable<TreinoDTO> {
+    return this.put<TreinoDTO>(treino);
   }
 
   deleteTreino(id: number): Observable<void> {
     return this.delete<void>(id);
   }
 
-  getTreinosByUsuario(usuarioId: number): Observable<TreinoDTO[]> {
-    // Exemplo de como usar parâmetros customizados
-    return this.get<TreinoDTO[]>();
-  }
 }

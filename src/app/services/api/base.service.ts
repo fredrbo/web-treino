@@ -23,14 +23,6 @@ export class BaseService {
         return this.configService.apiUrl;
     }
 
-
-    private getHeaders(): HttpHeaders {
-        return new HttpHeaders({
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        });
-    }
-
     protected get<T>(params?: HttpParams): Observable<T> {
         const url = `${this.baseUrl}?tabela=${this.table}`;
 
@@ -46,9 +38,38 @@ export class BaseService {
 
     protected post<TResponse, TRequest = TResponse>(data: TRequest): Observable<TResponse> {
         const url = `${this.baseUrl}?tabela=${this.table}`;
+        console.log('📤 POST Request URL:', url);
+        console.log('📤 POST Data (JSON raw):', data);
+
+        // Enviar JSON puro como raw (igual no Postman)
+        const options = {
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json'
+            })
+        };
+
+        return this.http.post<TResponse>(url, data, options)
+            .pipe(
+                catchError((error) => {
+                    console.error('❌ POST falhou:', error);
+                    console.error('❌ Status:', error.status);
+                    console.error('❌ Response:', error.error);
+                    return this.handleError(error);
+                })
+            );
+    }
+
+    protected put<TResponse>(data: any): Observable<TResponse> {
+        const url = `${this.baseUrl}?tabela=${this.table}`;
+        data.acao = 'put';
+        
+        console.log('📤 PUT Request URL:', url);
+        console.log('📤 PUT Data (JSON):', data);
 
         const options = {
-            headers: this.getHeaders()
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json'
+            })
         };
 
         return this.http.post<TResponse>(url, data, options)
@@ -57,57 +78,85 @@ export class BaseService {
             );
     }
 
-    protected put<T>(id: string | number, data: any): Observable<T> {
-        const url = `${this.baseUrl}?tabela=${this.table}&id=${id}`;
+    protected delete<TResponse>(id: string | number): Observable<TResponse> {
+        const url = `${this.baseUrl}?tabela=${this.table}`;
+        const data = { acao: 'delete', id: id };
+        
+        console.log('🗑️ DELETE Request URL:', url);
+        console.log('🗑️ DELETE Data (JSON):', data);
 
         const options = {
-            headers: this.getHeaders()
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json'
+            })
         };
 
-        return this.http.put<T>(url, data, options)
+        return this.http.post<TResponse>(url, data, options)
             .pipe(
-                catchError(this.handleError)
-            );
-    }
-
-    protected delete<T>(id: string | number): Observable<T> {
-        const url = `${this.baseUrl}?tabela=${this.table}&id=${id}`;
-
-        const options = {
-            headers: this.getHeaders()
-        };
-
-        return this.http.delete<T>(url, options)
-            .pipe(
-                catchError(this.handleError)
+                catchError((error) => {
+                    console.error('❌ DELETE falhou:', error);
+                    console.error('❌ DELETE Status:', error.status);
+                    console.error('❌ DELETE Error Code:', error.status);
+                    console.error('❌ DELETE URL:', error.url);
+                    console.error('❌ DELETE Headers:', error.headers);
+                    console.error('❌ DELETE Response Body:', error.error);
+                    console.error('❌ DELETE Full Error Object:', JSON.stringify(error, null, 2));
+                    return this.handleError(error);
+                })
             );
     }
 
     protected patch<T>(id: string | number, data: any): Observable<T> {
-        const url = `${this.baseUrl}?tabela=${this.table}&id=${id}`;
+        const url = `${this.baseUrl}?tabela=${this.table}`;
+        data.id = id;
+        data.acao = 'patch';
+
+        console.log('📤 PATCH Request URL:', url);
+        console.log('📤 PATCH Data (JSON):', data);
 
         const options = {
-            headers: this.getHeaders()
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json'
+            })
         };
 
-        return this.http.patch<T>(url, data, options)
+        return this.http.post<T>(url, data, options)
             .pipe(
                 catchError(this.handleError)
             );
     }
 
+    private getHeaders(): HttpHeaders {
+        return new HttpHeaders({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        });
+    }
 
     private handleError(error: any): Observable<never> {
         let errorMessage = '';
 
+        console.log('🔍 Analisando erro completo:', error);
+        console.log('🔍 Tipo do erro:', typeof error);
+        console.log('🔍 Status do erro:', error.status);
+        console.log('🔍 Nome do erro:', error.name);
+        console.log('🔍 URL do erro:', error.url);
+
         if (error.error instanceof ErrorEvent) {
-            errorMessage = `Erro: ${error.error.message}`;
+            // Erro do lado do cliente (rede, etc.)
+            errorMessage = `Erro de rede: ${error.error.message}`;
+            console.error('🌐 Erro de rede/cliente:', error.error);
+        } else if (error.status === 0) {
+            // Status 0 indica problema de CORS ou conectividade
+            errorMessage = `Erro de conectividade (CORS/Rede): Não foi possível conectar com o servidor. Verifique se a API está funcionando e se o CORS está configurado.`;
+            console.error('🚫 Possível erro de CORS ou conectividade');
         } else {
+            // Erro do servidor
             errorMessage = `Código de erro: ${error.status}\nMensagem: ${error.message}`;
+            console.error('🔥 Erro do servidor:', error.error);
         }
 
-        console.error(errorMessage);
+        console.error('💥 Mensagem final de erro:', errorMessage);
         return throwError(() => new Error(errorMessage));
     }
-
 }

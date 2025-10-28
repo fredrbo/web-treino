@@ -22,21 +22,12 @@ export class ExercicioService extends BaseService {
     return this.post<ExercicioDTO>(exercicio);
   }
 
-  updateExercicio(id: number, exercicio: Partial<ExercicioDTO>): Observable<ExercicioDTO> {
-    return this.put<ExercicioDTO>(id, exercicio);
+  updateExercicio(exercicio: Partial<ExercicioDTO>): Observable<ExercicioDTO> {
+    return this.put<ExercicioDTO>(exercicio);
   }
 
   deleteExercicio(id: number): Observable<void> {
     return this.delete<void>(id);
   }
 
-  getExerciciosByMusculo(musculo: string): Observable<ExercicioDTO[]> {
-    // Filtrar exercícios por músculo
-    return this.get<ExercicioDTO[]>();
-  }
-
-  getExerciciosByDificuldade(dificuldade: string): Observable<ExercicioDTO[]> {
-    // Filtrar exercícios por dificuldade
-    return this.get<ExercicioDTO[]>();
-  }
 }

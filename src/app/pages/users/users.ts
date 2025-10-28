@@ -5,13 +5,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UsuarioService } from '../../services/api';
 import { UsuariorDTO, CreateUsuarioDTO } from '../../components/usuario-model';
+import { DeleteUserDialogComponent } from './components/delete-user-dialog.component';
+import { UserFormDialogComponent } from './components/user-form-dialog.component';
 
 @Component({
   selector: 'app-users',
@@ -35,18 +37,12 @@ export class Users implements OnInit {
   usuarios: UsuariorDTO[] = [];
   loading = false;
   error: string | null = null;
-  
-  // Form data
-  showCreateForm = false;
-  newUser: CreateUsuarioDTO = {
-    nome: '',
-    email: ''
-  };
 
   constructor(
     private usuarioService: UsuarioService,
-    private snackBar: MatSnackBar
-  ) { }
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit() {
     this.loadUsuarios();
@@ -59,9 +55,6 @@ export class Users implements OnInit {
     this.usuarioService.getAllUsuarios().subscribe({
       next: (resp: any) => {
         this.loading = false;
-        console.log('📋 Resposta da API:', resp);
-        
-        // Verifica se é uma resposta com success/data ou diretamente um array
         if (Array.isArray(resp)) {
           this.usuarios = resp;
         } else if (resp.success && resp.data) {
@@ -85,26 +78,27 @@ export class Users implements OnInit {
   }
 
   createUsuario() {
-    this.showCreateForm = true;
-    this.newUser = {
-      nome: '',
-      email: ''
-    };
+    const dialogRef = this.dialog.open(UserFormDialogComponent, {
+      width: '500px',
+      maxWidth: '90vw',
+      disableClose: true,
+      data: { isEdit: false }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.handleCreateUser(result);
+      }
+    });
   }
 
-  submitCreateUser() {
-    if (!this.newUser.nome.trim() || !this.newUser.email.trim()) {
-      this.showMessage('Por favor, preencha todos os campos', true);
-      return;
-    }
+  private handleCreateUser(userData: CreateUsuarioDTO) {
+    console.log('📝 Enviando para criação:', userData);
 
-    console.log('📝 Enviando para criação:', this.newUser);
-
-    this.usuarioService.createUsuario(this.newUser).subscribe({
+    this.usuarioService.createUsuario(userData).subscribe({
       next: (usuario) => {
         console.log('✅ Usuário criado:', usuario);
         this.showMessage('Usuário criado com sucesso!');
-        this.showCreateForm = false;
         this.loadUsuarios(); // Recarrega a lista
       },
       error: (error) => {
@@ -114,33 +108,66 @@ export class Users implements OnInit {
     });
   }
 
-  cancelCreate() {
-    this.showCreateForm = false;
-    this.newUser = {
-      nome: '',
-      email: ''
-    };
+  editUsuario(usuario: UsuariorDTO) {
+    const dialogRef = this.dialog.open(UserFormDialogComponent, {
+      width: '500px',
+      maxWidth: '90vw',
+      disableClose: true,
+      data: { user: usuario, isEdit: true }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.handleUpdateUser(result);
+      }
+    });
   }
 
-  editUsuario(usuario: UsuariorDTO) {
-    console.log('✏️ Editar usuário:', usuario);
-    // TODO: Implementar edição
-    this.showMessage('Função de edição em desenvolvimento');
+  private handleUpdateUser(userData: UsuariorDTO) {
+    console.log('📝 Enviando para atualização:', userData);
+
+    this.usuarioService.updateUsuario(userData).subscribe({
+      next: (usuario) => {
+        console.log('✅ Usuário atualizado:', usuario);
+        this.showMessage('Usuário atualizado com sucesso!');
+        this.loadUsuarios(); // Recarrega a lista
+      },
+      error: (error) => {
+        console.error('❌ Erro ao atualizar usuário:', error);
+        this.showMessage('Erro ao atualizar usuário', true);
+      }
+    });
   }
 
   deleteUsuario(usuario: UsuariorDTO) {
-    if (confirm(`Deseja realmente excluir o usuário ${usuario.nome}?`)) {
-      this.usuarioService.deleteUsuario(usuario.id).subscribe({
-        next: () => {
-          this.showMessage('Usuário excluído com sucesso!');
-          this.loadUsuarios(); // Recarrega a lista
-        },
-        error: (error) => {
-          console.error('❌ Erro ao excluir usuário:', error);
-          this.showMessage('Erro ao excluir usuário', true);
-        }
-      });
-    }
+    const dialogRef = this.dialog.open(DeleteUserDialogComponent, {
+      width: '450px',
+      maxWidth: '90vw',
+      disableClose: true,
+      data: { user: usuario }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.handleDeleteUser(usuario);
+      }
+    });
+  }
+
+  private handleDeleteUser(usuario: UsuariorDTO) {
+    console.log('🗑️ Excluindo usuário:', usuario);
+
+    this.usuarioService.deleteUsuario(usuario.id).subscribe({
+      next: (response) => {
+        console.log('✅ Usuário excluído:', response);
+        this.showMessage('Usuário excluído com sucesso!');
+        this.loadUsuarios(); // Recarrega a lista
+      },
+      error: (error) => {
+        console.error('❌ Erro ao excluir usuário:', error);
+        this.showMessage('Erro ao excluir usuário', true);
+      }
+    });
   }
 
   private showMessage(message: string, isError = false) {

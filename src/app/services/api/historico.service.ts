@@ -23,8 +23,8 @@ export class HistoricoService extends BaseService {
     return this.post<HistoricoDTO>(historico);
   }
 
-  updateHistorico(id: number, historico: Partial<HistoricoDTO>): Observable<HistoricoDTO> {
-    return this.put<HistoricoDTO>(id, historico);
+  updateHistorico(historico: Partial<HistoricoDTO>): Observable<HistoricoDTO> {
+    return this.put<HistoricoDTO>(historico);
   }
 
   deleteHistorico(id: number): Observable<void> {
